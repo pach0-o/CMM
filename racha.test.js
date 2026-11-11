@@ -47,4 +47,8 @@ assert.deepStrictEqual([leidos[0].km, leidos[0].fcMedia, leidos[0].rodilla], [4.
 assert.strictEqual(leidos[0].feedback, "Bien hecho 🔥 Z2 cumplida");
 assert.deepStrictEqual(leerEntrenos(""), []);
 assert.strictEqual(numero(""), null);
-console.log("datos: 5 pruebas OK");
+// Lo que llega del buzón es el mismo JSON, sin base64
+const { normalizar } = require("./datos.js");
+assert.strictEqual(normalizar(e1).fcMedia, 151);
+assert.strictEqual(normalizar({ fecha: "mañana" }), null);
+console.log("datos: 7 pruebas OK");

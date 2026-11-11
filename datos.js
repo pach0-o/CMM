@@ -16,6 +16,24 @@ function numero(valor) {
   return encontrado ? Number(encontrado[0]) : null;
 }
 
+// Pasa un entreno tal como lo arma el atajo (el mismo JSON viaja por el link o por el buzón) al formato de la app.
+// Devuelve null si no tiene fecha válida: sin fecha no sirve para la racha.
+function normalizar(e) {
+  if (!e || !/^\d{4}-\d{2}-\d{2}$/.test(e.fecha)) return null;
+  return {
+    fecha: e.fecha,
+    hora: e.hora || "",
+    sesion: e.sesion || "",
+    km: numero(e.km),
+    fcMedia: numero(e.fc_media),
+    fcMax: numero(e.fc_max),
+    pctSobreZ2: numero(e.pct_sobre_z2),
+    rodilla: numero(e.rodilla),
+    sensacion: e.sensacion || "",
+    feedback: e.feedback || "",
+  };
+}
+
 function leerEntrenos(hash) {
   let crudo = (hash || "").replace(/^#/, "");
   if (!crudo.startsWith("d=")) return [];
@@ -24,20 +42,8 @@ function leerEntrenos(hash) {
   for (const parte of crudo.split(/[,\n]/)) {
     if (!parte.trim()) continue;
     try {
-      const e = JSON.parse(base64ATexto(parte));
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(e.fecha)) continue; // sin fecha válida no sirve para la racha
-      entrenos.push({
-        fecha: e.fecha,
-        hora: e.hora || "",
-        sesion: e.sesion || "",
-        km: numero(e.km),
-        fcMedia: numero(e.fc_media),
-        fcMax: numero(e.fc_max),
-        pctSobreZ2: numero(e.pct_sobre_z2),
-        rodilla: numero(e.rodilla),
-        sensacion: e.sensacion || "",
-        feedback: e.feedback || "",
-      });
+      const e = normalizar(JSON.parse(base64ATexto(parte)));
+      if (e) entrenos.push(e);
     } catch {
       // una línea dañada no debe botar las demás
     }
@@ -45,4 +51,4 @@ function leerEntrenos(hash) {
   return entrenos;
 }
 
-if (typeof module !== "undefined") module.exports = { leerEntrenos, numero };
+if (typeof module !== "undefined") module.exports = { leerEntrenos, numero, normalizar };

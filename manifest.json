@@ -1,0 +1,11 @@
+{
+  "name": "Bidii · tu coach de running",
+  "short_name": "Bidii",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "lang": "es",
+  "icons": [{ "src": "icono.png", "sizes": "180x180", "type": "image/png" }]
+}
