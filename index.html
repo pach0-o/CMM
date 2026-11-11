@@ -7,163 +7,204 @@
 <!-- Sin "apple-mobile-web-app-capable": así el ícono de inicio abre en Safari y comparte los datos que deja el atajo -->
 <link rel="apple-touch-icon" href="icono.png">
 <link rel="icon" href="icono.png">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14171b" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap">
 <style>
-/* Layout: una columna estilo "dorsal de carrera" — número grande arriba, tarjetas de estado abajo */
+/* Mundo: cuaderno cuadriculado + plumón rojo. Lo de hoy va primero y en grande; la cadena muestra el plan entero. */
 :root {
-  --fondo: #f3f2ef;
-  --superficie: #ffffff;
-  --tinta: #1d2126;
-  --tenue: #66707a;
-  --linea: #dedcd6;
-  --pista: #c8442b;        /* rojo de pista de atletismo: acento y racha */
-  --pista-suave: #f6dfd8;
-  --bien: #2f7d4f;
-  --ojo: #b07a12;
+  --papel: #ffffff;
+  --tinta: #15181b;
+  --tenue: #4a535c;        /* texto secundario: ≥ 4,5:1 sobre el papel */
+  --cuadro: #d6e3ee;       /* cuadrícula impresa del cuaderno */
+  --cuadro-fuerte: #9db3c6;
+  --plumon: #c8442b;       /* rojo de pista = plumón */
+  --plumon-suave: #fbe9e5;
+  --bien: #2a7347;
+  --ojo: #8f6205;
   --mal: #b3261e;
-  --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
   --texto: "Barlow", system-ui, -apple-system, sans-serif;
+  --borde: 1.5px;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --fondo: #121417; --superficie: #1b1f23; --tinta: #eceae5; --tenue: #9aa3ad;
-    --linea: #2c3238; --pista: #ef6a4f; --pista-suave: #3a211b;
-    --bien: #5cc08a; --ojo: #e0ad45; --mal: #f07a72; color-scheme: dark;
+    --papel: #14171b; --tinta: #eef0f2; --tenue: #a7b0b9;
+    --cuadro: #222a33; --cuadro-fuerte: #3b4856;
+    --plumon: #f06a4e; --plumon-suave: #3a1f19;
+    --bien: #6cc694; --ojo: #e3b04f; --mal: #f2837b;
+    color-scheme: dark;
   }
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
+::selection { background: var(--plumon); color: #fff; }
 body {
-  margin: 0; background: var(--fondo); color: var(--tinta);
-  font: 15px/1.5 var(--texto);
-  padding-top: max(12px, env(safe-area-inset-top, 0px));
-  padding-bottom: max(24px, env(safe-area-inset-bottom, 0px));
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  margin: 0; background: var(--papel); color: var(--tinta);
+  font: 16px/1.5 var(--texto);
+  padding: max(14px, env(safe-area-inset-top, 0px)) max(18px, env(safe-area-inset-right, 0px)) max(28px, env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));
 }
-main { max-width: 560px; margin: 0 auto; display: grid; gap: 14px; }
-h1, h2 { font-family: var(--display); font-weight: 800; letter-spacing: .01em; margin: 0; text-wrap: balance; }
-h2 { font-size: 13px; font-family: var(--texto); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--tenue); }
+main { max-width: 520px; margin: 0 auto; }
 .num { font-variant-numeric: tabular-nums; }
+a, summary { color: inherit; }
+:focus-visible { outline: 2px solid var(--plumon); outline-offset: 3px; border-radius: 2px; }
+h2 { font: 700 22px/1.1 var(--display); margin: 0; letter-spacing: .01em; }
+.tenue { color: var(--tenue); }
+.seccion { margin-top: 36px; }
+.seccion > h2 { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.seccion > h2 small { font: 600 15px/1 var(--texto); color: var(--tenue); }
 
-/* Cabecera */
-.cabecera { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-top: 4px; }
-.marca { font-size: 30px; line-height: 1; }
-/* Logo: las tres "i" sin punto (ı) llevan un punto rojo = tres días de racha */
+/* Cabecera: logo y cuenta regresiva */
+.cabecera { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.marca { font: 800 30px/1 var(--display); margin: 0; }
 .marca i { font-style: normal; position: relative; }
-.marca i::after {
+.marca i::after { /* las tres "ı" sin punto llevan el punto en plumón: tres días de racha */
   content: ""; position: absolute; left: 50%; top: .02em; transform: translateX(-50%);
-  width: .17em; height: .17em; border-radius: 50%; background: var(--pista);
+  width: .17em; height: .17em; border-radius: 50%; background: var(--plumon);
 }
-.carrera { font-size: 13px; color: var(--tenue); text-align: right; }
+.cuenta { text-align: right; line-height: 1.15; font-size: 13px; color: var(--tenue); }
+.cuenta b { font: 800 26px/1 var(--display); color: var(--tinta); }
 
-/* Dorsal: racha */
+/* Hoy: la sesión es el titular */
+.bloque-hoy { margin-top: 30px; }
+.bloque-hoy h1 { font: 800 clamp(44px, 14vw, 64px)/.92 var(--display); margin: 0; letter-spacing: -.005em; text-wrap: balance; }
+.bloque-hoy h1 .ok { color: var(--plumon); }
+.hoy-meta { margin: 10px 0 0; color: var(--tenue); }
+.hoy-meta b { color: var(--plumon); font-weight: 600; }
+.aviso { margin-top: 18px; padding: 10px 12px; border: var(--borde) solid var(--plumon); border-radius: 6px; font-size: 14px; }
+
+/* Dorsal con la racha */
 .dorsal {
-  background: var(--superficie); border: 1px solid var(--linea); border-radius: 14px;
-  padding: 18px 18px 16px; display: grid; gap: 12px; position: relative; overflow: hidden;
+  margin-top: 26px; border: var(--borde) solid var(--tinta); border-radius: 12px;
+  padding: 18px 18px 14px; position: relative; display: flex; align-items: flex-end; gap: 14px;
 }
-.dorsal::before, .dorsal::after { /* los 2 agujeros del alfiler de un dorsal */
-  content: ""; position: absolute; top: 10px; width: 9px; height: 9px; border-radius: 50%;
-  background: var(--fondo); border: 1px solid var(--linea);
+.dorsal::before, .dorsal::after { /* agujeros del alfiler */
+  content: ""; position: absolute; top: 9px; width: 8px; height: 8px; border-radius: 50%; border: var(--borde) solid var(--tinta);
 }
-.dorsal::before { left: 10px; } .dorsal::after { right: 10px; }
-.dorsal-fila { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; padding-top: 6px; }
-.racha { display: flex; align-items: flex-end; gap: 10px; min-width: 0; }
-.racha-num { font-family: var(--display); font-weight: 800; font-size: 88px; line-height: .8; }
-.racha-num::after { content: "."; color: var(--pista); }
-.racha-txt { font-weight: 600; line-height: 1.25; }
-.racha-txt small { display: block; font-weight: 400; color: var(--tenue); }
-.faltan { text-align: right; line-height: 1.2; flex-shrink: 0; }
-.faltan b { font-family: var(--display); font-size: 36px; line-height: 1; display: block; }
-.faltan small { color: var(--tenue); font-size: 12px; }
-.puntos { display: flex; gap: 5px; flex-wrap: wrap; }
-.punto { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--linea); display: grid; place-items: center; font-size: 11px; color: var(--tenue); }
-.punto.hecha { background: var(--pista); border-color: var(--pista); color: #fff; }
-.punto.perdida { border-color: var(--mal); color: var(--mal); }
-.punto.pendiente { border-color: var(--pista); border-style: dashed; }
-.leyenda { font-size: 12px; color: var(--tenue); }
+.dorsal::before { left: 9px; } .dorsal::after { right: 9px; }
+.racha-num { font: 800 92px/.78 var(--display); }
+.racha-num::after { content: "."; color: var(--plumon); }
+.racha-txt { font-weight: 600; line-height: 1.25; padding-bottom: 2px; }
+.racha-txt span { display: block; font-weight: 400; color: var(--tenue); font-size: 14px; }
 
-/* Tarjetas */
-.tarjeta { background: var(--superficie); border: 1px solid var(--linea); border-radius: 14px; padding: 16px; display: grid; gap: 10px; min-width: 0; }
-.sesion-titulo { font-family: var(--display); font-weight: 600; font-size: 26px; line-height: 1.1; }
-.sesion-meta { color: var(--tenue); font-size: 13px; }
-.chips { display: flex; gap: 6px; flex-wrap: wrap; }
-.chip { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--fondo); border: 1px solid var(--linea); }
-.chip.bien { color: var(--bien); border-color: currentColor; }
-.chip.ojo { color: var(--ojo); border-color: currentColor; }
-.chip.mal { color: var(--mal); border-color: currentColor; }
-.estado { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; justify-self: start; }
-.estado.hecha { background: var(--pista); color: #fff; }
-.estado.pendiente { background: var(--pista-suave); color: var(--pista); }
-.estado.descanso { background: var(--fondo); color: var(--tenue); border: 1px solid var(--linea); }
-.feedback { white-space: pre-wrap; overflow-wrap: anywhere; }
-.vacio { color: var(--tenue); }
+/* La cadena: el plan entero en cuadrícula de cuaderno */
+.hoja {
+  padding: 12px; border: 1px solid var(--cuadro-fuerte); border-radius: 4px;
+  background-color: var(--papel);
+  background-image: linear-gradient(var(--cuadro) 1px, transparent 1px), linear-gradient(90deg, var(--cuadro) 1px, transparent 1px);
+  background-size: 12px 12px; background-position: -1px -1px;
+}
+.cadena { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.celda {
+  aspect-ratio: 1; border: var(--borde) solid var(--cuadro-fuerte); border-radius: 3px;
+  background: var(--papel); position: relative; display: grid; place-items: center;
+}
+.celda svg { width: 72%; height: 72%; overflow: visible; }
+.celda path { fill: none; stroke-width: 3.2; stroke-linecap: round; }
+.celda.hecha { background: var(--plumon); border-color: var(--plumon); }
+.celda.hecha path { stroke: #fff; }
+.celda.pendiente { border-color: var(--plumon); border-style: dashed; }
+.celda.perdida path { stroke: var(--tenue); stroke-width: 2.2; }
+.celda.hoy { border: 2.5px solid var(--tinta); border-radius: 50%; }
+.celda.hoy.hecha { border-color: var(--plumon); }
+.celda.carrera { background: var(--tinta); border-color: var(--tinta); border-radius: 2px; }
+.celda.carrera::after { content: ""; width: 34%; height: 34%; border-radius: 50%; background: var(--plumon); }
+.leyenda { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--tenue); }
+.leyenda li { display: flex; align-items: center; gap: 6px; }
+.leyenda .celda { width: 14px; border-width: 1.5px; }
+.leyenda .celda.hoy { border-width: 2px; }
+@keyframes trazo { from { stroke-dashoffset: 30; } to { stroke-dashoffset: 0; } }
+.celda.nueva path { stroke-dasharray: 30; animation: trazo .5s cubic-bezier(.16, 1, .3, 1) .25s both; }
+.celda.nueva path + path { animation-delay: .55s; }
+@media (prefers-reduced-motion: reduce) { .celda.nueva path { animation: none; } }
 
-/* Semana */
-.dias { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.dia { border: 1px solid var(--linea); border-radius: 10px; padding: 8px; font-size: 13px; display: grid; gap: 2px; min-width: 0; }
-.dia b { font-family: var(--display); font-size: 18px; }
-.dia span { color: var(--tenue); overflow-wrap: anywhere; }
-.dia.hecha { border-color: var(--pista); background: var(--pista-suave); }
-.dia.perdida { border-color: var(--mal); }
+/* Semana: renglones, el estado a la derecha */
+.renglones { list-style: none; margin: 0; padding: 0; border-top: var(--borde) solid var(--tinta); }
+.renglones li { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 11px 0; border-bottom: 1px solid var(--cuadro-fuerte); }
+.renglones .fecha { font: 700 17px/1.2 var(--display); }
+.renglones .que { overflow-wrap: anywhere; }
+.renglones .marca-estado { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.renglones li.hoy-fila .fecha, .renglones li.hoy-fila .que { color: var(--plumon); font-weight: 600; }
+.e-hecha { color: var(--plumon); } .e-perdida { color: var(--mal); } .e-pendiente { color: var(--ojo); } .e-futura { color: var(--tenue); font-weight: 400 !important; }
+
+/* Feedback y mediciones */
+.medidas { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 8px 0 0; padding: 0; list-style: none; font-weight: 600; }
+.medidas li { display: flex; align-items: center; gap: 6px; }
+.medidas li::before { content: ""; width: 9px; height: 9px; border-radius: 2px; background: var(--cuadro-fuerte); }
+.medidas .bien::before { background: var(--bien); } .medidas .ojo::before { background: var(--ojo); } .medidas .mal::before { background: var(--mal); }
+.feedback { white-space: pre-wrap; overflow-wrap: anywhere; margin: 12px 0 0; max-width: 65ch; }
+.vacio { color: var(--tenue); margin: 0; }
 
 /* Historial */
-.historial { list-style: none; margin: 0; padding: 0; display: grid; }
-.historial li { padding: 10px 0; border-top: 1px solid var(--linea); display: grid; gap: 4px; }
-.historial li:first-child { border-top: 0; padding-top: 0; }
-.h-fila { display: flex; justify-content: space-between; gap: 8px; }
-.h-fecha { font-weight: 600; }
-details summary { cursor: pointer; font-weight: 600; }
-details summary:focus-visible, button:focus-visible { outline: 2px solid var(--pista); outline-offset: 2px; }
-.plan-semana { font-size: 13px; padding: 6px 0; border-top: 1px solid var(--linea); }
-.pie { font-size: 12px; color: var(--tenue); text-align: center; }
-.aviso { background: var(--pista-suave); color: var(--tinta); border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+.historial { list-style: none; margin: 0; padding: 0; }
+.historial > li { padding: 12px 0; border-bottom: 1px solid var(--cuadro-fuerte); }
+.historial > li:first-child { border-top: var(--borde) solid var(--tinta); }
+.h-fila { display: flex; justify-content: space-between; gap: 10px; }
+.h-fila b { font: 700 17px/1.2 var(--display); }
+.historial .cita { margin: 6px 0 0; color: var(--tenue); font-size: 14px; }
+
+details { border-top: var(--borde) solid var(--tinta); padding-top: 12px; }
+summary { cursor: pointer; font: 700 20px/1.2 var(--display); list-style-position: outside; }
+.plan-semana { font-size: 14px; padding: 8px 0; border-bottom: 1px solid var(--cuadro-fuerte); }
+.plan-semana b { font-family: var(--display); font-size: 16px; }
+.pie { margin-top: 32px; font-size: 13px; color: var(--tenue); text-align: center; }
 </style>
 </head>
 <body>
 <main>
   <header class="cabecera">
-    <h1 class="marca" aria-label="bidii"><span aria-hidden="true">b<i>ı</i>d<i>ı</i><i>ı</i></span></h1>
-    <div class="carrera">Medio Maratón de Concepción<br>dom 7 mar 2027 · 07:00</div>
+    <div class="marca" role="img" aria-label="bidii"><span aria-hidden="true">b<i>ı</i>d<i>ı</i><i>ı</i></span></div>
+    <div class="cuenta"><b class="num" id="faltan">–</b> días<br>Media de Concepción · dom 7 mar</div>
   </header>
 
-  <div id="aviso" class="aviso" hidden></div>
+  <section class="bloque-hoy" aria-live="polite">
+    <h1 id="hoy-titulo">…</h1>
+    <p class="hoy-meta" id="hoy-meta"></p>
+    <div id="aviso" class="aviso" hidden></div>
+  </section>
+
+  <section id="feedback-hoy" class="seccion" aria-labelledby="t-feedback-hoy" hidden>
+    <h2 id="t-feedback-hoy">Cómo te fue</h2>
+    <div id="feedback-hoy-cuerpo"></div>
+  </section>
 
   <section class="dorsal" aria-label="Racha">
-    <div class="dorsal-fila">
-      <div class="racha">
-        <div class="racha-num num" id="racha">0</div>
-        <div class="racha-txt">🔥 sesiones<br>seguidas<small id="mejor">Mejor: 0</small></div>
-      </div>
-      <div class="faltan"><b class="num" id="faltan">–</b><small>días para<br>la carrera</small></div>
+    <div class="racha-num num" id="racha">0</div>
+    <div class="racha-txt">sesiones seguidas<span id="mejor">Mejor: 0</span></div>
+  </section>
+
+  <section class="seccion" aria-labelledby="t-cadena">
+    <h2 id="t-cadena">La cadena <small class="num" id="cadena-cuenta"></small></h2>
+    <div class="hoja">
+      <ol class="cadena" id="cadena"></ol>
+      <ul class="leyenda" aria-hidden="true">
+        <li><span class="celda hecha"><svg viewBox="0 0 20 20"><path d="M5 5 15 15"/><path d="M15 5 5 15"/></svg></span>cumplida</li>
+        <li><span class="celda hoy"></span>hoy</li>
+        <li><span class="celda pendiente"></span>aún alcanzas</li>
+        <li><span class="celda perdida"><svg viewBox="0 0 20 20"><path d="M5 15 15 5"/></svg></span>perdida</li>
+        <li><span class="celda carrera"></span>la carrera</li>
+      </ul>
     </div>
-    <div class="puntos" id="puntos" aria-label="Últimas sesiones del plan"></div>
-    <div class="leyenda">● hecha · ◌ pendiente (aún tienes margen) · ✕ perdida</div>
   </section>
 
-  <section class="tarjeta" aria-labelledby="t-hoy">
-    <h2 id="t-hoy">Hoy</h2>
-    <div id="hoy"></div>
-  </section>
-
-  <section class="tarjeta" aria-labelledby="t-semana">
+  <section class="seccion" aria-labelledby="t-semana">
     <h2 id="t-semana">Esta semana</h2>
-    <div class="dias" id="semana"></div>
+    <ol class="renglones" id="semana"></ol>
   </section>
 
-  <section class="tarjeta" aria-labelledby="t-feedback">
+  <section id="feedback-ultimo" class="seccion" aria-labelledby="t-feedback">
     <h2 id="t-feedback">Último feedback</h2>
     <div id="feedback"></div>
   </section>
 
-  <section class="tarjeta" aria-labelledby="t-historial">
+  <section class="seccion" aria-labelledby="t-historial">
     <h2 id="t-historial">Historial</h2>
     <ul class="historial" id="historial"></ul>
   </section>
 
-  <section class="tarjeta">
+  <section class="seccion">
     <details>
       <summary>Plan completo (16 semanas)</summary>
       <div id="plan"></div>
@@ -181,6 +222,7 @@ const CLAVE = "cmm.entrenos";
 const DIA_CARRERA = "2027-03-07";
 const DIAS_CORTOS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
 const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+const NOMBRE_ESTADO = { hecha: "cumplida", pendiente: "aún alcanzas", perdida: "perdida", futura: "" };
 
 const $ = (id) => document.getElementById(id);
 function hoyLocal() {
@@ -202,6 +244,18 @@ function el(etiqueta, clase, texto) {
   if (texto !== undefined) e.textContent = texto;
   return e;
 }
+// La X del plumón (cumplida) o la raya (perdida), como SVG dentro de la celda
+function trazo(rayas) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 20 20");
+  svg.setAttribute("aria-hidden", "true");
+  for (const d of rayas) {
+    const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    p.setAttribute("d", d);
+    svg.append(p);
+  }
+  return svg;
+}
 
 // --- Guardar lo que llega del atajo (si viene en el link) ---
 function cargarGuardados() {
@@ -215,6 +269,7 @@ if (nuevos.length) {
   history.replaceState(null, "", location.pathname + location.search); // saca los datos del link
 }
 const entrenos = Object.values(guardados).sort((a, b) => b.fecha.localeCompare(a.fecha));
+const fechasNuevas = new Set(nuevos.map((e) => e.fecha));
 
 // --- Calcular ---
 // ?hoy=AAAA-MM-DD solo sirve para probar la app simulando otra fecha
@@ -222,66 +277,102 @@ const hoy = /^\d{4}-\d{2}-\d{2}$/.test(new URLSearchParams(location.search).get(
   ? new URLSearchParams(location.search).get("hoy") : hoyLocal();
 const { racha, mejor, estados } = calcularRacha(window.PLAN, entrenos, hoy);
 
-// --- Dorsal ---
+// --- Cabecera y dorsal ---
+$("faltan").textContent = Math.max(0, diasEntre(hoy, DIA_CARRERA));
 $("racha").textContent = racha;
 $("mejor").textContent = `Mejor: ${mejor}`;
-$("faltan").textContent = Math.max(0, diasEntre(hoy, DIA_CARRERA));
-const pasadas = estados.filter((s) => s.estado !== "futura");
-const visibles = [...pasadas.slice(-7), ...estados.filter((s) => s.estado === "futura").slice(0, 10 - Math.min(7, pasadas.length))];
-for (const s of visibles) {
-  const p = el("span", "punto " + s.estado, s.estado === "perdida" ? "✕" : "");
-  p.title = `${bonita(s.fecha)} · ${sinPrefijo(s.titulo)} · ${s.estado}`;
-  $("puntos").append(p);
-}
 
 // --- Hoy ---
 const sesionHoy = estados.find((s) => s.fecha === hoy);
 const ayer = estados.find((s) => s.estado === "pendiente" && s.fecha < hoy);
 const proxima = estados.find((s) => s.fecha > hoy);
-if (sesionHoy) {
-  $("hoy").append(el("div", "sesion-titulo", sinPrefijo(sesionHoy.titulo)));
-  $("hoy").append(el("span", "estado " + sesionHoy.estado, sesionHoy.estado === "hecha" ? "Hecha ✓" : "Te toca hoy"));
-  if (sesionHoy.hora) $("hoy").append(el("div", "sesion-meta", `Hora del plan: ${sesionHoy.hora}`));
+const ref = sesionHoy || ayer || proxima || estados[estados.length - 1];
+const numSemana = semanaDe(ref.titulo);
+const textoSemana = `semana ${numSemana} de 16`;
+const titulo = $("hoy-titulo"), meta = $("hoy-meta");
+titulo.textContent = ""; // saca el "…" que se ve mientras carga
+
+if (sesionHoy && sesionHoy.estado === "hecha") {
+  titulo.append(el("span", "ok", "Cumpliste: "), sinPrefijo(sesionHoy.titulo));
+  meta.textContent = `${bonita(hoy)} · ${textoSemana}. Un cuadro más en la cadena.`;
+} else if (sesionHoy) {
+  titulo.textContent = sinPrefijo(sesionHoy.titulo);
+  meta.append(el("b", "", "Te toca hoy"), ` · ${bonita(hoy)}${sesionHoy.hora ? " · " + sesionHoy.hora : ""} · ${textoSemana}`);
 } else if (ayer) {
-  $("hoy").append(el("div", "sesion-titulo", sinPrefijo(ayer.titulo)));
-  $("hoy").append(el("span", "estado pendiente", "De ayer: si corres hoy, cuenta para la racha"));
+  titulo.textContent = sinPrefijo(ayer.titulo);
+  meta.append(el("b", "", "Quedó de ayer"), " · si corres hoy, cuenta para la racha");
+} else if (hoy < window.PLAN[0].fecha) {
+  titulo.textContent = `El plan parte el ${bonita(window.PLAN[0].fecha)}`;
+  meta.textContent = `Primera sesión: ${sinPrefijo(window.PLAN[0].titulo)}.`;
+} else if (proxima) {
+  titulo.textContent = "Hoy descansas";
+  meta.textContent = `Próxima: ${bonita(proxima.fecha)} · ${sinPrefijo(proxima.titulo)}`;
 } else {
-  $("hoy").append(el("span", "estado descanso", "Descanso"));
-  if (proxima) $("hoy").append(el("div", "sesion-meta", `Próxima: ${bonita(proxima.fecha)} · ${sinPrefijo(proxima.titulo)}`));
+  titulo.textContent = "Llegó la carrera";
+  meta.textContent = "Todo el plan quedó atrás. A disfrutarla.";
 }
-if (hoy < window.PLAN[0].fecha) {
-  $("hoy").append(el("div", "sesion-meta", `El plan parte el ${bonita(window.PLAN[0].fecha)}.`));
+
+// --- La cadena ---
+const esCarrera = (s) => s.fecha === DIA_CARRERA;
+const entrenables = estados.filter((s) => !esCarrera(s));
+const cumplidas = entrenables.filter((s) => s.estado === "hecha").length;
+$("cadena-cuenta").textContent = `${cumplidas} de ${entrenables.length}`;
+for (const s of estados) {
+  if (esCarrera(s)) { // la carrera cierra la cadena: cuadro de tinta con el punto rojo
+    const m = el("li", "celda carrera");
+    m.title = `${bonita(s.fecha)} · Media de Concepción`;
+    m.setAttribute("aria-label", m.title);
+    $("cadena").append(m);
+    continue;
+  }
+  const c = el("li", "celda " + s.estado);
+  if (s.fecha === hoy || s === ayer) c.classList.add("hoy");
+  if (s.estado === "hecha") {
+    c.append(trazo(["M5 5 15 15", "M15 5 5 15"]));
+    if (fechasNuevas.has(s.entreno)) c.classList.add("nueva"); // el plumón dibuja solo lo que acaba de llegar
+  }
+  if (s.estado === "perdida") c.append(trazo(["M5 15 15 5"]));
+  const nombre = NOMBRE_ESTADO[s.estado];
+  c.title = `${bonita(s.fecha)} · ${sinPrefijo(s.titulo)}${nombre ? " · " + nombre : ""}`;
+  c.setAttribute("aria-label", c.title);
+  $("cadena").append(c);
 }
 
 // --- Semana (la semana del plan de hoy, o la próxima) ---
-const ref = sesionHoy || ayer || proxima || estados[estados.length - 1];
-const numSemana = semanaDe(ref.titulo);
 for (const s of estados.filter((x) => semanaDe(x.titulo) === numSemana)) {
-  const d = el("div", "dia " + s.estado);
-  d.append(el("b", "", bonita(s.fecha)), el("span", "", sinPrefijo(s.titulo)));
-  $("semana").append(d);
+  const li = el("li", s.fecha === hoy ? "hoy-fila" : "");
+  li.append(
+    el("span", "fecha num", bonita(s.fecha)),
+    el("span", "que", sinPrefijo(s.titulo)),
+    el("span", "marca-estado e-" + s.estado, s.fecha === hoy && s.estado !== "hecha" ? "hoy" : NOMBRE_ESTADO[s.estado] || "—"),
+  );
+  $("semana").append(li);
 }
 $("t-semana").textContent = `Semana ${numSemana} de 16`;
 
-// --- Chips de un entreno ---
-function chipsDe(e) {
-  const c = el("div", "chips");
-  if (e.km != null) c.append(el("span", "chip num", `${e.km.toFixed(1)} km`));
-  if (e.fcMedia != null) c.append(el("span", "chip num" + (e.fcMedia <= 155 ? " bien" : " ojo"), `FC ${Math.round(e.fcMedia)}`));
-  if (e.pctSobreZ2 != null) {
-    const clase = e.pctSobreZ2 <= 10 ? " bien" : e.pctSobreZ2 <= 30 ? " ojo" : " mal";
-    c.append(el("span", "chip num" + clase, `${Math.round(e.pctSobreZ2)}% sobre Z2`));
-  }
-  if (e.rodilla != null) c.append(el("span", "chip num" + (e.rodilla > 3 ? " mal" : e.rodilla > 1 ? " ojo" : " bien"), `Rodilla ${e.rodilla}/10`));
-  return c;
+// --- Mediciones de un entreno (color + valor escrito) ---
+function medidasDe(e) {
+  const m = el("ul", "medidas num");
+  if (e.km != null) m.append(el("li", "", `${e.km.toFixed(1)} km`));
+  if (e.fcMedia != null) m.append(el("li", e.fcMedia <= 155 ? "bien" : "ojo", `FC ${Math.round(e.fcMedia)}`));
+  if (e.pctSobreZ2 != null) m.append(el("li", e.pctSobreZ2 <= 10 ? "bien" : e.pctSobreZ2 <= 30 ? "ojo" : "mal", `${Math.round(e.pctSobreZ2)}% sobre Z2`));
+  if (e.rodilla != null) m.append(el("li", e.rodilla > 3 ? "mal" : e.rodilla > 1 ? "ojo" : "bien", `Rodilla ${e.rodilla}/10`));
+  return m;
+}
+function bloqueFeedback(destino, e, conFecha) {
+  if (conFecha) destino.append(el("p", "vacio", `${bonita(e.fecha)}${e.hora ? " · " + e.hora : ""}${e.sesion ? " · " + sinPrefijo(e.sesion) : ""}`));
+  destino.append(medidasDe(e));
+  destino.append(el("p", "feedback", e.feedback || "Sin texto de Claude en este entreno."));
 }
 
-// --- Último feedback ---
-if (entrenos.length) {
-  const u = entrenos[0];
-  $("feedback").append(el("div", "sesion-meta", `${bonita(u.fecha)}${u.hora ? " · " + u.hora : ""}${u.sesion ? " · " + sinPrefijo(u.sesion) : ""}`));
-  $("feedback").append(chipsDe(u));
-  $("feedback").append(el("div", "feedback", u.feedback || "Sin texto de Claude en este entreno."));
+// --- Feedback: si ya corriste hoy, va arriba; si no, el último va más abajo ---
+const u = entrenos[0];
+if (u && u.fecha === hoy) {
+  bloqueFeedback($("feedback-hoy-cuerpo"), u, false);
+  $("feedback-hoy").hidden = false;
+  $("feedback-ultimo").hidden = true;
+} else if (u) {
+  bloqueFeedback($("feedback"), u, true);
 } else {
   $("feedback").append(el("p", "vacio", "Aún no hay entrenos. Cuando termines de correr con la app Entreno del reloj, el atajo CMM le pide el feedback a Claude y aparece aquí."));
 }
@@ -291,27 +382,27 @@ if (entrenos.length) {
   for (const e of entrenos) {
     const li = el("li");
     const fila = el("div", "h-fila");
-    fila.append(el("span", "h-fecha", bonita(e.fecha)), el("span", "sesion-meta", e.sesion ? sinPrefijo(e.sesion) : "Salida extra"));
-    li.append(fila, chipsDe(e));
-    if (e.sensacion) li.append(el("div", "sesion-meta", `“${e.sensacion}”`));
+    fila.append(el("b", "num", bonita(e.fecha)), el("span", "tenue", e.sesion ? sinPrefijo(e.sesion) : "Salida extra"));
+    li.append(fila, medidasDe(e));
+    if (e.sensacion) li.append(el("p", "cita", `“${e.sensacion}”`));
     $("historial").append(li);
   }
 } else {
-  $("historial").append(el("li", "vacio", "Tu historial empieza con el rodaje del martes 17."));
+  $("historial").append(el("li", "vacio", `Tu historial empieza con el rodaje del ${bonita(window.PLAN[0].fecha)}.`));
 }
 
 // --- Plan completo ---
 const porSemana = {};
 for (const s of estados) (porSemana[semanaDe(s.titulo)] ||= []).push(s);
 for (const [n, ses] of Object.entries(porSemana)) {
-  const marcas = { hecha: "✓", perdida: "✕", pendiente: "◌", futura: "" };
-  const linea = ses.map((s) => `${bonita(s.fecha)}: ${sinPrefijo(s.titulo)} ${marcas[s.estado]}`).join(" · ");
-  $("plan").append(el("div", "plan-semana", `S${n} — ${linea}`));
+  const fila = el("div", "plan-semana");
+  fila.append(el("b", "", `S${n} `), ses.map((s) => `${bonita(s.fecha)}: ${sinPrefijo(s.titulo)}${NOMBRE_ESTADO[s.estado] ? " (" + NOMBRE_ESTADO[s.estado] + ")" : ""}`).join(" · "));
+  $("plan").append(fila);
 }
 
 // --- Pie y avisos ---
 if (nuevos.length) {
-  $("aviso").textContent = `Actualizado: ${nuevos.length} entreno${nuevos.length > 1 ? "s" : ""} recibido${nuevos.length > 1 ? "s" : ""} del atajo.`;
+  $("aviso").textContent = `Llegó${nuevos.length > 1 ? "ron" : ""} ${nuevos.length} entreno${nuevos.length > 1 ? "s" : ""} desde el atajo.`;
   $("aviso").hidden = false;
 }
 $("pie").textContent = `Tus entrenos se guardan solo en este iPhone · ${entrenos.length} registrado${entrenos.length === 1 ? "" : "s"}`;
