@@ -32,7 +32,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --papel: #14171b; --tinta: #eef0f2; --tenue: #a7b0b9;
-    --cuadro: #222a33; --cuadro-fuerte: #3b4856;
+    --cuadro: #2b3540; --cuadro-fuerte: #42515f;
     --plumon: #f06a4e; --plumon-suave: #3a1f19;
     --bien: #6cc694; --ojo: #e3b04f; --mal: #f2837b;
     color-scheme: dark;
@@ -70,7 +70,7 @@ h2 { font: 700 22px/1.1 var(--display); margin: 0; letter-spacing: .01em; }
 /* Hoy: la sesión es el titular */
 .bloque-hoy { margin-top: 30px; }
 .bloque-hoy h1 { font: 800 clamp(44px, 14vw, 64px)/.92 var(--display); margin: 0; letter-spacing: -.005em; text-wrap: balance; }
-.bloque-hoy h1 .ok { color: var(--plumon); }
+.bloque-hoy h1 .ok { color: var(--plumon); display: block; }
 .hoy-meta { margin: 10px 0 0; color: var(--tenue); }
 .hoy-meta b { color: var(--plumon); font-weight: 600; }
 .aviso { margin-top: 18px; padding: 10px 12px; border: var(--borde) solid var(--plumon); border-radius: 6px; font-size: 14px; }
@@ -96,20 +96,22 @@ h2 { font: 700 22px/1.1 var(--display); margin: 0; letter-spacing: .01em; }
   background-image: linear-gradient(var(--cuadro) 1px, transparent 1px), linear-gradient(90deg, var(--cuadro) 1px, transparent 1px);
   background-size: 12px 12px; background-position: -1px -1px;
 }
-.cadena { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.cadena { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 4px; } /* 3 cuadros = 1 semana; 1 fila = 4 semanas */
 .celda {
   aspect-ratio: 1; border: var(--borde) solid var(--cuadro-fuerte); border-radius: 3px;
   background: var(--papel); position: relative; display: grid; place-items: center;
 }
-.celda svg { width: 72%; height: 72%; overflow: visible; }
+.celda svg { width: 72%; height: 72%; overflow: visible; transform: rotate(var(--giro, 0deg)); } /* cada X un poco chueca, como hecha a mano */
 .celda path { fill: none; stroke-width: 3.2; stroke-linecap: round; }
 .celda.hecha { background: var(--plumon); border-color: var(--plumon); }
 .celda.hecha path { stroke: #fff; }
 .celda.pendiente { border-color: var(--plumon); border-style: dashed; }
 .celda.perdida path { stroke: var(--tenue); stroke-width: 2.2; }
-.celda.hoy { border: 2.5px solid var(--tinta); border-radius: 50%; }
+.celda.hoy { border: 2.5px solid var(--tinta); border-radius: 50%; box-shadow: 0 0 0 2px var(--papel), 0 0 0 3.5px var(--plumon); }
+.leyenda .celda.hoy { box-shadow: none; }
 .celda.hoy.hecha { border-color: var(--plumon); }
-.celda.carrera { background: var(--tinta); border-color: var(--tinta); border-radius: 2px; }
+.celda.carrera { background: var(--tinta); border-color: var(--tinta); border-radius: 2px; grid-column: 12; }
+.leyenda .celda.carrera { grid-column: auto; }
 .celda.carrera::after { content: ""; width: 34%; height: 34%; border-radius: 50%; background: var(--plumon); }
 .leyenda { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--tenue); }
 .leyenda li { display: flex; align-items: center; gap: 6px; }
@@ -125,15 +127,19 @@ h2 { font: 700 22px/1.1 var(--display); margin: 0; letter-spacing: .01em; }
 .renglones li { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 11px 0; border-bottom: 1px solid var(--cuadro-fuerte); }
 .renglones .fecha { font: 700 17px/1.2 var(--display); }
 .renglones .que { overflow-wrap: anywhere; }
-.renglones .marca-estado { font-size: 13px; font-weight: 600; white-space: nowrap; }
-.renglones li.hoy-fila .fecha, .renglones li.hoy-fila .que { color: var(--plumon); font-weight: 600; }
-.e-hecha { color: var(--plumon); } .e-perdida { color: var(--mal); } .e-pendiente { color: var(--ojo); } .e-futura { color: var(--tenue); font-weight: 400 !important; }
+.renglones .marca-estado { font-size: 13px; font-weight: 600; white-space: nowrap; text-align: right; }
+.renglones .marca-estado.dato { font: 700 17px/1.2 var(--display); font-variant-numeric: tabular-nums; color: var(--tenue); }
+.renglones li.hoy-fila .fecha, .renglones li.hoy-fila .que, .renglones li.hoy-fila .marca-estado { color: var(--plumon); font-weight: 600; }
+.e-hecha { color: var(--plumon); } .e-perdida { color: var(--tenue); text-decoration: line-through; } /* gris tachado, como su raya en la cadena */ .e-pendiente { color: var(--ojo); } .e-futura { color: var(--tenue); font-weight: 400 !important; }
 
 /* Feedback y mediciones */
 .medidas { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 8px 0 0; padding: 0; list-style: none; font-weight: 600; }
 .medidas li { display: flex; align-items: center; gap: 6px; }
-.medidas li::before { content: ""; width: 9px; height: 9px; border-radius: 2px; background: var(--cuadro-fuerte); }
-.medidas .bien::before { background: var(--bien); } .medidas .ojo::before { background: var(--ojo); } .medidas .mal::before { background: var(--mal); }
+/* Cada estado con su forma, no solo su color: círculo = bien, triángulo = ojo, raya = mal */
+.medidas li[class]::before { content: ""; width: 10px; height: 10px; flex: none; }
+.medidas .bien::before { background: var(--bien); border-radius: 50%; }
+.medidas .ojo::before { background: var(--ojo); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.medidas li.mal::before { background: var(--mal); height: 3px; border-radius: 2px; } /* raya: la X queda reservada para "cumplida" */
 .feedback { white-space: pre-wrap; overflow-wrap: anywhere; margin: 12px 0 0; max-width: 65ch; }
 .vacio { color: var(--tenue); margin: 0; }
 
@@ -146,7 +152,8 @@ h2 { font: 700 22px/1.1 var(--display); margin: 0; letter-spacing: .01em; }
 .historial .cita { margin: 6px 0 0; color: var(--tenue); font-size: 14px; }
 
 details { border-top: var(--borde) solid var(--tinta); padding-top: 12px; }
-summary { cursor: pointer; font: 700 20px/1.2 var(--display); list-style-position: outside; }
+summary { cursor: pointer; font: 700 20px/1.2 var(--display); }
+summary::marker, summary::-webkit-details-marker { color: var(--plumon); }
 .plan-semana { font-size: 14px; padding: 8px 0; border-bottom: 1px solid var(--cuadro-fuerte); }
 .plan-semana b { font-family: var(--display); font-size: 16px; }
 .pie { margin-top: 32px; font-size: 13px; color: var(--tenue); text-align: center; }
@@ -236,7 +243,11 @@ function bonita(fechaIso) {
 function diasEntre(desde, hasta) {
   return Math.round((new Date(hasta + "T12:00:00Z") - new Date(desde + "T12:00:00Z")) / 86400000);
 }
-function sinPrefijo(titulo) { return titulo.replace(/^S\d+ · /, "").replace(/^🏃\s*/, ""); }
+// Saca "S6 · 🏃" y amarra el número a "km" para que no se corten en dos líneas
+function sinPrefijo(titulo) { return titulo.replace(/^S\d+ · /, "").replace(/^🏃\s*/, "").replace(/(\d) km/g, "$1 km"); }
+// Distancia o duración de la sesión ("5,5 km", "30'"), para alinearla a la derecha
+function datoDe(titulo) { return (sinPrefijo(titulo).match(/\d+(?:,\d+)? km|\d+'/) || [""])[0]; }
+const unDecimal = (n) => n.toLocaleString("es-CL", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 function semanaDe(titulo) { return (titulo.match(/^S(\d+)/) || [])[1]; }
 function el(etiqueta, clase, texto) {
   const e = document.createElement(etiqueta);
@@ -280,7 +291,8 @@ const { racha, mejor, estados } = calcularRacha(window.PLAN, entrenos, hoy);
 // --- Cabecera y dorsal ---
 $("faltan").textContent = Math.max(0, diasEntre(hoy, DIA_CARRERA));
 $("racha").textContent = racha;
-$("mejor").textContent = `Mejor: ${mejor}`;
+const antesDelPlan = hoy < window.PLAN[0].fecha;
+$("mejor").textContent = mejor === 0 && antesDelPlan ? `Tu racha parte el ${bonita(window.PLAN[0].fecha)}` : `Mejor: ${mejor}`;
 
 // --- Hoy ---
 const sesionHoy = estados.find((s) => s.fecha === hoy);
@@ -301,9 +313,10 @@ if (sesionHoy && sesionHoy.estado === "hecha") {
 } else if (ayer) {
   titulo.textContent = sinPrefijo(ayer.titulo);
   meta.append(el("b", "", "Quedó de ayer"), " · si corres hoy, cuenta para la racha");
-} else if (hoy < window.PLAN[0].fecha) {
-  titulo.textContent = `El plan parte el ${bonita(window.PLAN[0].fecha)}`;
-  meta.textContent = `Primera sesión: ${sinPrefijo(window.PLAN[0].titulo)}.`;
+} else if (antesDelPlan) {
+  const dias = diasEntre(hoy, window.PLAN[0].fecha);
+  titulo.textContent = sinPrefijo(window.PLAN[0].titulo);
+  meta.append(el("b", "", `Parte el ${bonita(window.PLAN[0].fecha)}`), ` · en ${dias} día${dias === 1 ? "" : "s"}`);
 } else if (proxima) {
   titulo.textContent = "Hoy descansas";
   meta.textContent = `Próxima: ${bonita(proxima.fecha)} · ${sinPrefijo(proxima.titulo)}`;
@@ -326,7 +339,8 @@ for (const s of estados) {
     continue;
   }
   const c = el("li", "celda " + s.estado);
-  if (s.fecha === hoy || s === ayer) c.classList.add("hoy");
+  if (s.fecha === hoy || s === ayer || (antesDelPlan && s === estados[0])) c.classList.add("hoy");
+  c.style.setProperty("--giro", `${(Number(s.fecha.slice(-2)) % 7) - 3}deg`); // inclinación fija por fecha
   if (s.estado === "hecha") {
     c.append(trazo(["M5 5 15 15", "M15 5 5 15"]));
     if (fechasNuevas.has(s.entreno)) c.classList.add("nueva"); // el plumón dibuja solo lo que acaba de llegar
@@ -344,7 +358,9 @@ for (const s of estados.filter((x) => semanaDe(x.titulo) === numSemana)) {
   li.append(
     el("span", "fecha num", bonita(s.fecha)),
     el("span", "que", sinPrefijo(s.titulo)),
-    el("span", "marca-estado e-" + s.estado, s.fecha === hoy && s.estado !== "hecha" ? "hoy" : NOMBRE_ESTADO[s.estado] || "—"),
+    s.estado === "futura" && s.fecha !== hoy
+      ? el("span", "marca-estado dato", datoDe(s.titulo) || "—")
+      : el("span", "marca-estado e-" + s.estado, s.fecha === hoy && s.estado !== "hecha" ? "hoy" : NOMBRE_ESTADO[s.estado]),
   );
   $("semana").append(li);
 }
@@ -353,7 +369,7 @@ $("t-semana").textContent = `Semana ${numSemana} de 16`;
 // --- Mediciones de un entreno (color + valor escrito) ---
 function medidasDe(e) {
   const m = el("ul", "medidas num");
-  if (e.km != null) m.append(el("li", "", `${e.km.toFixed(1)} km`));
+  if (e.km != null) m.append(el("li", "", `${unDecimal(e.km)} km`));
   if (e.fcMedia != null) m.append(el("li", e.fcMedia <= 155 ? "bien" : "ojo", `FC ${Math.round(e.fcMedia)}`));
   if (e.pctSobreZ2 != null) m.append(el("li", e.pctSobreZ2 <= 10 ? "bien" : e.pctSobreZ2 <= 30 ? "ojo" : "mal", `${Math.round(e.pctSobreZ2)}% sobre Z2`));
   if (e.rodilla != null) m.append(el("li", e.rodilla > 3 ? "mal" : e.rodilla > 1 ? "ojo" : "bien", `Rodilla ${e.rodilla}/10`));
