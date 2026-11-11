@@ -32,7 +32,11 @@ assert.strictEqual(carrera.racha, 2);
 // Sin datos: racha 0, nada perdido antes de empezar
 assert.strictEqual(calcularRacha(plan, [], "2026-11-12").racha, 0);
 
-console.log("racha: 7 pruebas OK");
+// Pesas que se colaron (0,3 km): no cuentan para la racha; 1 km o más sí
+assert.strictEqual(calcularRacha(plan, [{ fecha: "2026-11-17", km: 0.3 }], "2026-11-17").racha, 0);
+assert.strictEqual(calcularRacha(plan, [{ fecha: "2026-11-17", km: 1 }], "2026-11-17").racha, 1);
+
+console.log("racha: 9 pruebas OK");
 
 // --- Lectura del link que manda el atajo ---
 const { leerEntrenos, numero } = require("./datos.js");

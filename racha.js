@@ -9,8 +9,12 @@ function sumarDias(fechaIso, dias) {
   return d.toISOString().slice(0, 10);
 }
 
+// Menos de 1 km no es una salida a correr (ej. pesas en el gimnasio con el pulso alto): no tacha la cadena
+const KM_MINIMO = 1;
+const esSalidaACorrer = (e) => e.km == null || e.km >= KM_MINIMO; // sin dato de km se le cree al atajo
+
 function calcularRacha(sesiones, entrenos, hoy) {
-  const fechasEntreno = new Set(entrenos.map((e) => e.fecha));
+  const fechasEntreno = new Set(entrenos.filter(esSalidaACorrer).map((e) => e.fecha));
   const fechasSesion = new Set(sesiones.map((s) => s.fecha));
   const usadas = new Set();
   let racha = 0;
