@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CMM · Coach Media Maratón</title>
+<title>Bidii · tu coach de running</title>
 <!-- Sin "apple-mobile-web-app-capable": así el ícono de inicio abre en Safari y comparte los datos que deja el atajo -->
 <link rel="apple-touch-icon" href="icono.png">
 <link rel="icon" href="icono.png">
@@ -50,8 +50,13 @@ h2 { font-size: 13px; font-family: var(--texto); font-weight: 600; text-transfor
 
 /* Cabecera */
 .cabecera { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-top: 4px; }
-.marca { font-size: 26px; }
-.marca span { color: var(--pista); }
+.marca { font-size: 30px; line-height: 1; }
+/* Logo: las tres "i" sin punto (ı) llevan un punto rojo = tres días de racha */
+.marca i { font-style: normal; position: relative; }
+.marca i::after {
+  content: ""; position: absolute; left: 50%; top: .02em; transform: translateX(-50%);
+  width: .17em; height: .17em; border-radius: 50%; background: var(--pista);
+}
 .carrera { font-size: 13px; color: var(--tenue); text-align: right; }
 
 /* Dorsal: racha */
@@ -66,7 +71,8 @@ h2 { font-size: 13px; font-family: var(--texto); font-weight: 600; text-transfor
 .dorsal::before { left: 10px; } .dorsal::after { right: 10px; }
 .dorsal-fila { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; padding-top: 6px; }
 .racha { display: flex; align-items: flex-end; gap: 10px; min-width: 0; }
-.racha-num { font-family: var(--display); font-weight: 800; font-size: 88px; line-height: .8; color: var(--pista); }
+.racha-num { font-family: var(--display); font-weight: 800; font-size: 88px; line-height: .8; }
+.racha-num::after { content: "."; color: var(--pista); }
 .racha-txt { font-weight: 600; line-height: 1.25; }
 .racha-txt small { display: block; font-weight: 400; color: var(--tenue); }
 .faltan { text-align: right; line-height: 1.2; flex-shrink: 0; }
@@ -119,7 +125,7 @@ details summary:focus-visible, button:focus-visible { outline: 2px solid var(--p
 <body>
 <main>
   <header class="cabecera">
-    <h1 class="marca">C<span>M</span>M</h1>
+    <h1 class="marca" aria-label="bidii"><span aria-hidden="true">b<i>ı</i>d<i>ı</i><i>ı</i></span></h1>
     <div class="carrera">Medio Maratón de Concepción<br>dom 7 mar 2027 · 07:00</div>
   </header>
 

@@ -1,4 +1,6 @@
-# CMM · Coach Media Maratón
+# Bidii (antes CMM · Coach Media Maratón)
+
+La marca es **Bidii** (ver `docs/marca-y-negocio.md`); la carpeta, el repo y los atajos del iPhone siguen llamándose CMM.
 
 Web app en **https://pach0-o.github.io/CMM/** (GitHub Pages, repo público `pach0-o/CMM`).
 El código fuente vive en la carpeta `cmm/` del proyecto privado `claude-pruebas`; el repo CMM es solo una copia publicada.
