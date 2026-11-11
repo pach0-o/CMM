@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CMM · Coach Media Maratón</title>
+<!-- Sin "apple-mobile-web-app-capable": así el ícono de inicio abre en Safari y comparte los datos que deja el atajo -->
+<link rel="apple-touch-icon" href="icono.png">
+<link rel="icon" href="icono.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: una columna estilo "dorsal de carrera" — número grande arriba, tarjetas de estado abajo */
+:root {
+  --fondo: #f3f2ef;
+  --superficie: #ffffff;
+  --tinta: #1d2126;
+  --tenue: #66707a;
+  --linea: #dedcd6;
+  --pista: #c8442b;        /* rojo de pista de atletismo: acento y racha */
+  --pista-suave: #f6dfd8;
+  --bien: #2f7d4f;
+  --ojo: #b07a12;
+  --mal: #b3261e;
+  --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --texto: "Inter", system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #121417; --superficie: #1b1f23; --tinta: #eceae5; --tenue: #9aa3ad;
+    --linea: #2c3238; --pista: #ef6a4f; --pista-suave: #3a211b;
+    --bien: #5cc08a; --ojo: #e0ad45; --mal: #f07a72; color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--fondo); color: var(--tinta);
+  font: 15px/1.5 var(--texto);
+  padding-top: max(12px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 560px; margin: 0 auto; display: grid; gap: 14px; }
+h1, h2 { font-family: var(--display); font-weight: 800; letter-spacing: .01em; margin: 0; text-wrap: balance; }
+h2 { font-size: 13px; font-family: var(--texto); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--tenue); }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Cabecera */
+.cabecera { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-top: 4px; }
+.marca { font-size: 26px; }
+.marca span { color: var(--pista); }
+.carrera { font-size: 13px; color: var(--tenue); text-align: right; }
+
+/* Dorsal: racha */
+.dorsal {
+  background: var(--superficie); border: 1px solid var(--linea); border-radius: 14px;
+  padding: 18px 18px 16px; display: grid; gap: 12px; position: relative; overflow: hidden;
+}
+.dorsal::before, .dorsal::after { /* los 2 agujeros del alfiler de un dorsal */
+  content: ""; position: absolute; top: 10px; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--fondo); border: 1px solid var(--linea);
+}
+.dorsal::before { left: 10px; } .dorsal::after { right: 10px; }
+.dorsal-fila { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; padding-top: 6px; }
+.racha { display: flex; align-items: flex-end; gap: 10px; min-width: 0; }
+.racha-num { font-family: var(--display); font-weight: 800; font-size: 88px; line-height: .8; color: var(--pista); }
+.racha-txt { font-weight: 600; line-height: 1.25; }
+.racha-txt small { display: block; font-weight: 400; color: var(--tenue); }
+.faltan { text-align: right; line-height: 1.2; flex-shrink: 0; }
+.faltan b { font-family: var(--display); font-size: 36px; line-height: 1; display: block; }
+.faltan small { color: var(--tenue); font-size: 12px; }
+.puntos { display: flex; gap: 5px; flex-wrap: wrap; }
+.punto { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--linea); display: grid; place-items: center; font-size: 11px; color: var(--tenue); }
+.punto.hecha { background: var(--pista); border-color: var(--pista); color: #fff; }
+.punto.perdida { border-color: var(--mal); color: var(--mal); }
+.punto.pendiente { border-color: var(--pista); border-style: dashed; }
+.leyenda { font-size: 12px; color: var(--tenue); }
+
+/* Tarjetas */
+.tarjeta { background: var(--superficie); border: 1px solid var(--linea); border-radius: 14px; padding: 16px; display: grid; gap: 10px; min-width: 0; }
+.sesion-titulo { font-family: var(--display); font-weight: 600; font-size: 26px; line-height: 1.1; }
+.sesion-meta { color: var(--tenue); font-size: 13px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--fondo); border: 1px solid var(--linea); }
+.chip.bien { color: var(--bien); border-color: currentColor; }
+.chip.ojo { color: var(--ojo); border-color: currentColor; }
+.chip.mal { color: var(--mal); border-color: currentColor; }
+.estado { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; justify-self: start; }
+.estado.hecha { background: var(--pista); color: #fff; }
+.estado.pendiente { background: var(--pista-suave); color: var(--pista); }
+.estado.descanso { background: var(--fondo); color: var(--tenue); border: 1px solid var(--linea); }
+.feedback { white-space: pre-wrap; overflow-wrap: anywhere; }
+.vacio { color: var(--tenue); }
+
+/* Semana */
+.dias { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.dia { border: 1px solid var(--linea); border-radius: 10px; padding: 8px; font-size: 13px; display: grid; gap: 2px; min-width: 0; }
+.dia b { font-family: var(--display); font-size: 18px; }
+.dia span { color: var(--tenue); overflow-wrap: anywhere; }
+.dia.hecha { border-color: var(--pista); background: var(--pista-suave); }
+.dia.perdida { border-color: var(--mal); }
+
+/* Historial */
+.historial { list-style: none; margin: 0; padding: 0; display: grid; }
+.historial li { padding: 10px 0; border-top: 1px solid var(--linea); display: grid; gap: 4px; }
+.historial li:first-child { border-top: 0; padding-top: 0; }
+.h-fila { display: flex; justify-content: space-between; gap: 8px; }
+.h-fecha { font-weight: 600; }
+details summary { cursor: pointer; font-weight: 600; }
+details summary:focus-visible, button:focus-visible { outline: 2px solid var(--pista); outline-offset: 2px; }
+.plan-semana { font-size: 13px; padding: 6px 0; border-top: 1px solid var(--linea); }
+.pie { font-size: 12px; color: var(--tenue); text-align: center; }
+.aviso { background: var(--pista-suave); color: var(--tinta); border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <header class="cabecera">
+    <h1 class="marca">C<span>M</span>M</h1>
+    <div class="carrera">Medio Maratón de Concepción<br>dom 7 mar 2027 · 07:00</div>
+  </header>
+
+  <div id="aviso" class="aviso" hidden></div>
+
+  <section class="dorsal" aria-label="Racha">
+    <div class="dorsal-fila">
+      <div class="racha">
+        <div class="racha-num num" id="racha">0</div>
+        <div class="racha-txt">🔥 sesiones<br>seguidas<small id="mejor">Mejor: 0</small></div>
+      </div>
+      <div class="faltan"><b class="num" id="faltan">–</b><small>días para<br>la carrera</small></div>
+    </div>
+    <div class="puntos" id="puntos" aria-label="Últimas sesiones del plan"></div>
+    <div class="leyenda">● hecha · ◌ pendiente (aún tienes margen) · ✕ perdida</div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-hoy">
+    <h2 id="t-hoy">Hoy</h2>
+    <div id="hoy"></div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-semana">
+    <h2 id="t-semana">Esta semana</h2>
+    <div class="dias" id="semana"></div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-feedback">
+    <h2 id="t-feedback">Último feedback</h2>
+    <div id="feedback"></div>
+  </section>
+
+  <section class="tarjeta" aria-labelledby="t-historial">
+    <h2 id="t-historial">Historial</h2>
+    <ul class="historial" id="historial"></ul>
+  </section>
+
+  <section class="tarjeta">
+    <details>
+      <summary>Plan completo (16 semanas)</summary>
+      <div id="plan"></div>
+    </details>
+  </section>
+
+  <p class="pie" id="pie">Tus entrenos se guardan solo en este iPhone.</p>
+</main>
+
+<script src="plan.js"></script>
+<script src="racha.js"></script>
+<script src="datos.js"></script>
+<script>
+const CLAVE = "cmm.entrenos";
+const DIA_CARRERA = "2027-03-07";
+const DIAS_CORTOS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+
+const $ = (id) => document.getElementById(id);
+function hoyLocal() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function bonita(fechaIso) {
+  const d = new Date(fechaIso + "T12:00:00");
+  return `${DIAS_CORTOS[d.getDay()]} ${d.getDate()} ${MESES[d.getMonth()]}`;
+}
+function diasEntre(desde, hasta) {
+  return Math.round((new Date(hasta + "T12:00:00Z") - new Date(desde + "T12:00:00Z")) / 86400000);
+}
+function sinPrefijo(titulo) { return titulo.replace(/^S\d+ · /, "").replace(/^🏃\s*/, ""); }
+function semanaDe(titulo) { return (titulo.match(/^S(\d+)/) || [])[1]; }
+function el(etiqueta, clase, texto) {
+  const e = document.createElement(etiqueta);
+  if (clase) e.className = clase;
+  if (texto !== undefined) e.textContent = texto;
+  return e;
+}
+
+// --- Guardar lo que llega del atajo (si viene en el link) ---
+function cargarGuardados() {
+  try { return JSON.parse(localStorage.getItem(CLAVE)) || {}; } catch { return {}; }
+}
+const guardados = cargarGuardados();
+const nuevos = leerEntrenos(location.hash);
+for (const e of nuevos) guardados[e.fecha] = e; // un entreno por día; el más nuevo manda
+if (nuevos.length) {
+  try { localStorage.setItem(CLAVE, JSON.stringify(guardados)); } catch {}
+  history.replaceState(null, "", location.pathname + location.search); // saca los datos del link
+}
+const entrenos = Object.values(guardados).sort((a, b) => b.fecha.localeCompare(a.fecha));
+
+// --- Calcular ---
+// ?hoy=AAAA-MM-DD solo sirve para probar la app simulando otra fecha
+const hoy = /^\d{4}-\d{2}-\d{2}$/.test(new URLSearchParams(location.search).get("hoy") || "")
+  ? new URLSearchParams(location.search).get("hoy") : hoyLocal();
+const { racha, mejor, estados } = calcularRacha(window.PLAN, entrenos, hoy);
+
+// --- Dorsal ---
+$("racha").textContent = racha;
+$("mejor").textContent = `Mejor: ${mejor}`;
+$("faltan").textContent = Math.max(0, diasEntre(hoy, DIA_CARRERA));
+const pasadas = estados.filter((s) => s.estado !== "futura");
+const visibles = [...pasadas.slice(-7), ...estados.filter((s) => s.estado === "futura").slice(0, 10 - Math.min(7, pasadas.length))];
+for (const s of visibles) {
+  const p = el("span", "punto " + s.estado, s.estado === "perdida" ? "✕" : "");
+  p.title = `${bonita(s.fecha)} · ${sinPrefijo(s.titulo)} · ${s.estado}`;
+  $("puntos").append(p);
+}
+
+// --- Hoy ---
+const sesionHoy = estados.find((s) => s.fecha === hoy);
+const ayer = estados.find((s) => s.estado === "pendiente" && s.fecha < hoy);
+const proxima = estados.find((s) => s.fecha > hoy);
+if (sesionHoy) {
+  $("hoy").append(el("div", "sesion-titulo", sinPrefijo(sesionHoy.titulo)));
+  $("hoy").append(el("span", "estado " + sesionHoy.estado, sesionHoy.estado === "hecha" ? "Hecha ✓" : "Te toca hoy"));
+  if (sesionHoy.hora) $("hoy").append(el("div", "sesion-meta", `Hora del plan: ${sesionHoy.hora}`));
+} else if (ayer) {
+  $("hoy").append(el("div", "sesion-titulo", sinPrefijo(ayer.titulo)));
+  $("hoy").append(el("span", "estado pendiente", "De ayer: si corres hoy, cuenta para la racha"));
+} else {
+  $("hoy").append(el("span", "estado descanso", "Descanso"));
+  if (proxima) $("hoy").append(el("div", "sesion-meta", `Próxima: ${bonita(proxima.fecha)} · ${sinPrefijo(proxima.titulo)}`));
+}
+if (hoy < window.PLAN[0].fecha) {
+  $("hoy").append(el("div", "sesion-meta", `El plan parte el ${bonita(window.PLAN[0].fecha)}.`));
+}
+
+// --- Semana (la semana del plan de hoy, o la próxima) ---
+const ref = sesionHoy || ayer || proxima || estados[estados.length - 1];
+const numSemana = semanaDe(ref.titulo);
+for (const s of estados.filter((x) => semanaDe(x.titulo) === numSemana)) {
+  const d = el("div", "dia " + s.estado);
+  d.append(el("b", "", bonita(s.fecha)), el("span", "", sinPrefijo(s.titulo)));
+  $("semana").append(d);
+}
+$("t-semana").textContent = `Semana ${numSemana} de 16`;
+
+// --- Chips de un entreno ---
+function chipsDe(e) {
+  const c = el("div", "chips");
+  if (e.km != null) c.append(el("span", "chip num", `${e.km.toFixed(1)} km`));
+  if (e.fcMedia != null) c.append(el("span", "chip num" + (e.fcMedia <= 155 ? " bien" : " ojo"), `FC ${Math.round(e.fcMedia)}`));
+  if (e.pctSobreZ2 != null) {
+    const clase = e.pctSobreZ2 <= 10 ? " bien" : e.pctSobreZ2 <= 30 ? " ojo" : " mal";
+    c.append(el("span", "chip num" + clase, `${Math.round(e.pctSobreZ2)}% sobre Z2`));
+  }
+  if (e.rodilla != null) c.append(el("span", "chip num" + (e.rodilla > 3 ? " mal" : e.rodilla > 1 ? " ojo" : " bien"), `Rodilla ${e.rodilla}/10`));
+  return c;
+}
+
+// --- Último feedback ---
+if (entrenos.length) {
+  const u = entrenos[0];
+  $("feedback").append(el("div", "sesion-meta", `${bonita(u.fecha)}${u.hora ? " · " + u.hora : ""}${u.sesion ? " · " + sinPrefijo(u.sesion) : ""}`));
+  $("feedback").append(chipsDe(u));
+  $("feedback").append(el("div", "feedback", u.feedback || "Sin texto de Claude en este entreno."));
+} else {
+  $("feedback").append(el("p", "vacio", "Aún no hay entrenos. Cuando termines de correr con la app Entreno del reloj, el atajo CMM le pide el feedback a Claude y aparece aquí."));
+}
+
+// --- Historial ---
+if (entrenos.length) {
+  for (const e of entrenos) {
+    const li = el("li");
+    const fila = el("div", "h-fila");
+    fila.append(el("span", "h-fecha", bonita(e.fecha)), el("span", "sesion-meta", e.sesion ? sinPrefijo(e.sesion) : "Salida extra"));
+    li.append(fila, chipsDe(e));
+    if (e.sensacion) li.append(el("div", "sesion-meta", `“${e.sensacion}”`));
+    $("historial").append(li);
+  }
+} else {
+  $("historial").append(el("li", "vacio", "Tu historial empieza con el rodaje del martes 17."));
+}
+
+// --- Plan completo ---
+const porSemana = {};
+for (const s of estados) (porSemana[semanaDe(s.titulo)] ||= []).push(s);
+for (const [n, ses] of Object.entries(porSemana)) {
+  const marcas = { hecha: "✓", perdida: "✕", pendiente: "◌", futura: "" };
+  const linea = ses.map((s) => `${bonita(s.fecha)}: ${sinPrefijo(s.titulo)} ${marcas[s.estado]}`).join(" · ");
+  $("plan").append(el("div", "plan-semana", `S${n} — ${linea}`));
+}
+
+// --- Pie y avisos ---
+if (nuevos.length) {
+  $("aviso").textContent = `Actualizado: ${nuevos.length} entreno${nuevos.length > 1 ? "s" : ""} recibido${nuevos.length > 1 ? "s" : ""} del atajo.`;
+  $("aviso").hidden = false;
+}
+$("pie").textContent = `Tus entrenos se guardan solo en este iPhone · ${entrenos.length} registrado${entrenos.length === 1 ? "" : "s"}`;
+</script>
+</body>
+</html>
