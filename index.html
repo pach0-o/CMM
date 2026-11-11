@@ -6,6 +6,7 @@
 <title>Bidii · tu coach de running</title>
 <!-- Sin "apple-mobile-web-app-capable": así el ícono de inicio abre en Safari y comparte los datos que deja el atajo -->
 <link rel="apple-touch-icon" href="icono.png">
+<meta name="apple-mobile-web-app-title" content="Bidii">
 <link rel="icon" href="icono.png">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#14171b" media="(prefers-color-scheme: dark)">
@@ -268,19 +269,31 @@ function trazo(rayas) {
   return svg;
 }
 
+// --- Ícono de inicio ---
+// iOS ya no deja poner una foto como ícono de un atajo, así que el ícono de inicio es esta página (con su logo)
+// y al abrirse llama al atajo "Abrir CMM", que vuelve aquí con el historial de iCloud en el link (#d=...).
+// ?instalar: cambia el link a ?inicio sin salir, para que "Añadir a pantalla de inicio" guarde ese link.
+const parametros = new URLSearchParams(location.search);
+const instalando = parametros.has("instalar");
+if (instalando) history.replaceState(null, "", location.pathname + "?inicio");
+else if (parametros.has("inicio") && !location.hash) {
+  location.replace("shortcuts://run-shortcut?name=" + encodeURIComponent("Abrir CMM"));
+}
+
 // --- Guardar lo que llega del atajo (si viene en el link) ---
 function cargarGuardados() {
   try { return JSON.parse(localStorage.getItem(CLAVE)) || {}; } catch { return {}; }
 }
 const guardados = cargarGuardados();
 const nuevos = leerEntrenos(location.hash);
+// El atajo manda todo el historial cada vez: "nuevo" es solo lo que no estaba guardado
+const fechasNuevas = new Set(nuevos.filter((e) => !guardados[e.fecha]).map((e) => e.fecha));
 for (const e of nuevos) guardados[e.fecha] = e; // un entreno por día; el más nuevo manda
 if (nuevos.length) {
   try { localStorage.setItem(CLAVE, JSON.stringify(guardados)); } catch {}
   history.replaceState(null, "", location.pathname + location.search); // saca los datos del link
 }
 const entrenos = Object.values(guardados).sort((a, b) => b.fecha.localeCompare(a.fecha));
-const fechasNuevas = new Set(nuevos.map((e) => e.fecha));
 
 // --- Calcular ---
 // ?hoy=AAAA-MM-DD solo sirve para probar la app simulando otra fecha
@@ -417,8 +430,13 @@ for (const [n, ses] of Object.entries(porSemana)) {
 }
 
 // --- Pie y avisos ---
-if (nuevos.length) {
-  $("aviso").textContent = `Llegó${nuevos.length > 1 ? "ron" : ""} ${nuevos.length} entreno${nuevos.length > 1 ? "s" : ""} desde el atajo.`;
+if (fechasNuevas.size) {
+  const n = fechasNuevas.size;
+  $("aviso").textContent = `Llegó${n > 1 ? "ron" : ""} ${n} entreno${n > 1 ? "s" : ""} nuevo${n > 1 ? "s" : ""} desde el atajo.`;
+  $("aviso").hidden = false;
+}
+if (instalando) {
+  $("aviso").textContent = "Ahora toca Compartir › Añadir a pantalla de inicio. Ese ícono abrirá Bidii con tu historial.";
   $("aviso").hidden = false;
 }
 $("pie").textContent = `Tus entrenos se guardan solo en este iPhone · ${entrenos.length} registrado${entrenos.length === 1 ? "" : "s"}`;
