@@ -44,7 +44,7 @@
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-::selection { background: var(--plumon); color: #fff; }
+::selection { background: var(--plumon); color: var(--papel); }
 body {
   margin: 0; background: var(--papel); color: var(--tinta);
   font: 16px/1.5 var(--texto);
@@ -171,7 +171,7 @@ summary::marker, summary::-webkit-details-marker { color: var(--plumon); }
 .buzon-form button, .boton-texto {
   font: 700 17px/1 var(--display); border-radius: 6px; cursor: pointer;
 }
-.buzon-form button { background: var(--plumon); color: #fff; border: 0; padding: 0 16px; }
+.buzon-form button { background: var(--plumon); color: var(--papel); /* blanco en claro, tinta en oscuro: contraste ≥ 4,5 */ border: 0; padding: 0 16px; }
 .boton-texto { background: none; border: 0; color: var(--plumon); padding: 0; text-decoration: underline; text-underline-offset: 3px; }
 .buzon-error { color: var(--mal); font-size: 14px; margin: 8px 0 0; }
 </style>
