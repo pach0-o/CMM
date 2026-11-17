@@ -164,7 +164,10 @@ summary::marker, summary::-webkit-details-marker { color: var(--plumon); }
 
 /* Conexión con el buzón (la clave se pide una sola vez) */
 .buzon-form { display: flex; gap: 8px; margin-top: 10px; }
-.buzon-form input {
+.perfil-form { display: grid; gap: 12px; margin-top: 12px; }
+.perfil-form label { display: grid; gap: 4px; font-size: 14px; color: var(--tenue); }
+.perfil-form button { justify-self: start; font: 700 17px/1 var(--display); border-radius: 6px; cursor: pointer; background: var(--plumon); color: var(--papel); border: 0; padding: 10px 16px; }
+.buzon-form input, .perfil-form input, .perfil-form textarea {
   flex: 1; min-width: 0; font: 16px var(--texto); color: var(--tinta); background: var(--papel);
   border: var(--borde) solid var(--tinta); border-radius: 6px; padding: 10px 12px;
 }
@@ -183,7 +186,7 @@ summary::marker, summary::-webkit-details-marker { color: var(--plumon); }
 <main>
   <header class="cabecera">
     <div class="marca" role="img" aria-label="bidii"><span aria-hidden="true">b<i>ı</i>d<i>ı</i><i>ı</i></span></div>
-    <div class="cuenta"><b class="num" id="faltan">–</b> días<br>Media de Concepción · dom 7 mar</div>
+    <div class="cuenta"><b class="num" id="faltan">–</b> días<br><span id="carrera-txt"></span></div>
   </header>
 
   <section class="bloque-hoy" aria-live="polite">
@@ -250,6 +253,22 @@ summary::marker, summary::-webkit-details-marker { color: var(--plumon); }
     <p class="buzon-error" id="sesion-error" hidden></p>
   </section>
 
+  <section class="seccion" id="mi-perfil" hidden>
+    <details>
+      <summary>Mi perfil</summary>
+      <p class="vacio">Con esto Bidii calcula tu cuenta regresiva, tus zonas y el feedback.</p>
+      <form class="perfil-form" id="perfil-form">
+        <label>Tu nombre <input id="p-nombre" maxlength="40" autocomplete="given-name"></label>
+        <label>Carrera objetivo <input id="p-carrera" maxlength="60" placeholder="Ej: Maratón de Santiago"></label>
+        <label>Fecha de la carrera <input id="p-fecha" type="date"></label>
+        <label>Límite de tu Z2 (lpm) <input id="p-z2" type="number" inputmode="numeric" min="100" max="220" step="1" placeholder="Ej: 155"></label>
+        <label>Notas para el coach <textarea id="p-notas" maxlength="500" rows="3" placeholder="Lesiones, objetivo, días que no puedes entrenar…"></textarea></label>
+        <button type="submit">Guardar perfil</button>
+      </form>
+      <p class="buzon-error" id="perfil-error" hidden></p>
+    </details>
+  </section>
+
   <section class="seccion" id="buzon" aria-labelledby="t-buzon">
     <h2 id="t-buzon">Buzón</h2>
     <p class="vacio" id="buzon-estado">Conecta tu buzón para que tus entrenos lleguen solos.</p>
@@ -269,7 +288,6 @@ summary::marker, summary::-webkit-details-marker { color: var(--plumon); }
 <script src="datos.js"></script>
 <script>
 const CLAVE = "cmm.entrenos";
-const DIA_CARRERA = "2027-03-07";
 const DIAS_CORTOS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
 const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 const NOMBRE_ESTADO = { hecha: "cumplida", pendiente: "aún alcanzas", perdida: "perdida", futura: "" };
@@ -334,6 +352,15 @@ function cargarPlanPropio() {
   try { const p = JSON.parse(localStorage.getItem(CLAVE_PLAN)); return Array.isArray(p) ? p : null; } catch { return null; }
 }
 const planPropio = cargarPlanPropio();
+
+// --- Perfil (carrera, Z2, notas). Sin perfil guardado: los valores de Pacho, o nada si es otro usuario ---
+const CLAVE_PERFIL = "bidii.perfil";
+function cargarPerfil() {
+  try { const p = JSON.parse(localStorage.getItem(CLAVE_PERFIL)); return p && typeof p === "object" ? p : null; } catch { return null; }
+}
+const perfil = cargarPerfil();
+const carrera = perfil ? perfil.carrera : planPropio ? null : { nombre: "Media de Concepción", fecha: "2027-03-07" };
+const Z2 = perfil?.z2 ?? 155;
 function lunesDe(fechaIso) { return sumarDias(fechaIso, -((new Date(fechaIso + "T12:00:00Z").getUTCDay() + 6) % 7)); }
 // El plan propio no trae "S1 · ": la semana se cuenta desde el lunes de la primera sesión
 function numerarSemanas(sesiones) {
@@ -353,9 +380,12 @@ const hoy = /^\d{4}-\d{2}-\d{2}$/.test(new URLSearchParams(location.search).get(
 const { racha, mejor, estados } = calcularRacha(PLAN, entrenos, hoy);
 
 // --- Cabecera y dorsal ---
-$("faltan").textContent = Math.max(0, diasEntre(hoy, DIA_CARRERA));
-// shortcut: la cuenta regresiva es de la Media de Concepción; con plan propio se oculta hasta que cada uno pueda poner su carrera
-if (planPropio) document.querySelector(".cuenta").remove();
+if (carrera) {
+  $("faltan").textContent = Math.max(0, diasEntre(hoy, carrera.fecha));
+  $("carrera-txt").textContent = `${carrera.nombre} · ${bonita(carrera.fecha)}`;
+} else {
+  document.querySelector(".cuenta").remove(); // sin carrera en el perfil no hay cuenta regresiva
+}
 $("racha").textContent = racha;
 const antesDelPlan = !sinPlan && hoy < PLAN[0].fecha;
 $("mejor").textContent = mejor === 0 && antesDelPlan ? `Tu racha parte el ${bonita(PLAN[0].fecha)}` : `Mejor: ${mejor}`;
@@ -399,14 +429,14 @@ if (sinPlan) {
 }
 
 // --- La cadena ---
-const esCarrera = (s) => s.fecha === DIA_CARRERA;
+const esCarrera = (s) => s.fecha === carrera?.fecha;
 const entrenables = estados.filter((s) => !esCarrera(s));
 const cumplidas = entrenables.filter((s) => s.estado === "hecha").length;
 $("cadena-cuenta").textContent = `${cumplidas} de ${entrenables.length}`;
 for (const s of estados) {
   if (esCarrera(s)) { // la carrera cierra la cadena: cuadro de tinta con el punto rojo
     const m = el("li", "celda carrera");
-    m.title = `${bonita(s.fecha)} · Media de Concepción`;
+    m.title = `${bonita(s.fecha)} · ${carrera.nombre}`;
     m.setAttribute("aria-label", m.title);
     $("cadena").append(m);
     continue;
@@ -443,7 +473,7 @@ $("t-semana").textContent = numSemana ? textoSemana[0].toUpperCase() + textoSema
 function medidasDe(e) {
   const m = el("ul", "medidas num");
   if (e.km != null) m.append(el("li", "", `${unDecimal(e.km)} km`));
-  if (e.fcMedia != null) m.append(el("li", e.fcMedia <= 155 ? "bien" : "ojo", `FC ${Math.round(e.fcMedia)}`));
+  if (e.fcMedia != null) m.append(el("li", e.fcMedia <= Z2 ? "bien" : "ojo", `FC ${Math.round(e.fcMedia)}`));
   if (e.pctSobreZ2 != null) m.append(el("li", e.pctSobreZ2 <= 10 ? "bien" : e.pctSobreZ2 <= 30 ? "ojo" : "mal", `${Math.round(e.pctSobreZ2)}% sobre Z2`));
   if (e.rodilla != null) m.append(el("li", e.rodilla > 3 ? "mal" : e.rodilla > 1 ? "ojo" : "bien", `Rodilla ${e.rodilla}/10`));
   return m;
@@ -528,8 +558,10 @@ async function sincronizar(clave) {
   $("buzon-estado").textContent = `Conectado · ${remotos.length} entreno${remotos.length === 1 ? "" : "s"} en el buzón.`;
   $("buzon-form").hidden = true;
   $("buzon-error").hidden = true;
-  const planCambio = await sincronizarPlan(clave);
-  if (!cambiados.length && !planCambio) return;
+  $("mi-perfil").hidden = false;
+  const planCambio = await traerDelBuzon(clave, "/plan", CLAVE_PLAN, planPropio);
+  const perfilCambio = await traerDelBuzon(clave, "/perfil", CLAVE_PERFIL, perfil);
+  if (!cambiados.length && !planCambio && !perfilCambio) return;
   for (const e of cambiados) guardados[e.fecha] = e;
   try {
     localStorage.setItem(CLAVE, JSON.stringify(guardados));
@@ -537,40 +569,70 @@ async function sincronizar(clave) {
   } catch { return; } // sin almacenamiento no se puede recargar con los datos
   location.reload();
 }
-// Trae el plan del casillero. Devuelve true si cambió lo guardado en el teléfono (hay que recargar)
-async function sincronizarPlan(clave) {
+// Trae el plan o el perfil del casillero. Devuelve true si cambió lo guardado en el teléfono (hay que recargar)
+// null del buzón = no hay (en el plan de Pacho significa "usa plan.js")
+async function traerDelBuzon(clave, ruta, claveLocal, actual) {
   let remoto;
   try {
-    const r = await fetch(`${BUZON}/plan`, { headers: { Authorization: `Bearer ${clave}` }, cache: "no-store" });
+    const r = await fetch(`${BUZON}${ruta}`, { headers: { Authorization: `Bearer ${clave}` }, cache: "no-store" });
     if (!r.ok) return false;
     remoto = await r.json();
   } catch { return false; }
-  if (!Array.isArray(remoto)) { // null = casillero de Pacho: su plan es plan.js
-    if (!planPropio) return false;
-    try { localStorage.removeItem(CLAVE_PLAN); } catch {}
+  if (remoto == null) {
+    if (actual == null) return false;
+    try { localStorage.removeItem(claveLocal); } catch {}
     return true;
   }
-  if (JSON.stringify(remoto) === JSON.stringify(planPropio)) return false;
-  try { localStorage.setItem(CLAVE_PLAN, JSON.stringify(remoto)); } catch { return false; }
+  if (JSON.stringify(remoto) === JSON.stringify(actual)) return false;
+  try { localStorage.setItem(claveLocal, JSON.stringify(remoto)); } catch { return false; }
   return true;
 }
 // Primero se guarda en el buzón; solo si resulta se guarda en el teléfono, así no quedan distintos
-async function guardarPlan(nuevo) {
-  const error = (texto) => { $("sesion-error").textContent = texto; $("sesion-error").hidden = false; };
+async function guardarEnBuzon(ruta, claveLocal, datos, idError) {
+  const error = (texto) => { $(idError).textContent = texto; $(idError).hidden = false; };
   const clave = leerClave();
   if (!clave) { error("Conecta tu buzón primero (más abajo)."); return; }
-  const ordenado = [...nuevo].sort((a, b) => a.fecha.localeCompare(b.fecha));
   let r = null;
   try {
-    r = await fetch(`${BUZON}/plan`, {
+    r = await fetch(`${BUZON}${ruta}`, {
       method: "POST",
       headers: { Authorization: `Bearer ${clave}`, "Content-Type": "application/json" },
-      body: JSON.stringify(ordenado),
+      body: JSON.stringify(datos),
     });
   } catch {}
-  if (!r || !r.ok) { error("No pude guardar en el buzón. Revisa la conexión e intenta de nuevo."); return; }
-  try { localStorage.setItem(CLAVE_PLAN, JSON.stringify(ordenado)); } catch {}
+  if (!r || !r.ok) {
+    const motivo = r && r.status === 400 ? (await r.json().catch(() => ({}))).error : null;
+    error(motivo || "No pude guardar en el buzón. Revisa la conexión e intenta de nuevo.");
+    return;
+  }
+  // Se guarda lo mismo que devolverá el buzón, para no recargar dos veces
+  const limpio = await fetch(`${BUZON}${ruta}`, { headers: { Authorization: `Bearer ${clave}` }, cache: "no-store" })
+    .then((x) => (x.ok ? x.json() : datos)).catch(() => datos);
+  try { localStorage.setItem(claveLocal, JSON.stringify(limpio)); } catch {}
   location.reload();
+}
+function guardarPlan(nuevo) {
+  guardarEnBuzon("/plan", CLAVE_PLAN, [...nuevo].sort((a, b) => a.fecha.localeCompare(b.fecha)), "sesion-error");
+}
+// --- Mi perfil: visible para quien ya conectó su buzón (o apenas se conecta, en sincronizar) ---
+{
+  $("mi-perfil").hidden = !leerClave();
+  $("p-nombre").value = perfil?.nombre || "";
+  $("p-carrera").value = carrera?.nombre || "";
+  $("p-fecha").value = carrera?.fecha || "";
+  $("p-z2").value = perfil?.z2 ?? (planPropio ? "" : 155);
+  $("p-notas").value = perfil?.notas || "";
+  if (!perfil && planPropio) $("mi-perfil").querySelector("details").open = true; // usuario nuevo: que lo vea de entrada
+  $("perfil-form").addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    const fecha = $("p-fecha").value;
+    guardarEnBuzon("/perfil", CLAVE_PERFIL, {
+      nombre: $("p-nombre").value,
+      carrera: fecha ? { nombre: $("p-carrera").value, fecha } : null,
+      z2: $("p-z2").value === "" ? null : Number($("p-z2").value),
+      notas: $("p-notas").value,
+    }, "perfil-error");
+  });
 }
 // --- Mi semana: cada usuario anota las sesiones que le manda su coach ---
 if (planPropio) {
