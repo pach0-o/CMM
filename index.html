@@ -499,7 +499,7 @@ function medidasDe(e) {
   if (e.km != null) m.append(el("li", "", `${unDecimal(e.km)} km`));
   if (e.fcMedia != null) m.append(el("li", e.fcMedia <= Z2 ? "bien" : "ojo", `FC ${Math.round(e.fcMedia)}`));
   if (e.pctSobreZ2 != null) m.append(el("li", e.pctSobreZ2 <= 10 ? "bien" : e.pctSobreZ2 <= 30 ? "ojo" : "mal", `${Math.round(e.pctSobreZ2)}% sobre Z2`));
-  if (e.rodilla != null) m.append(el("li", e.rodilla > 3 ? "mal" : e.rodilla > 1 ? "ojo" : "bien", `Rodilla ${e.rodilla}/10`));
+  if (e.rodilla != null) m.append(el("li", e.rodilla > 3 ? "mal" : e.rodilla > 1 ? "ojo" : "bien", `Dolor ${e.rodilla}/10`));
   return m;
 }
 function bloqueFeedback(destino, e, conFecha) {
@@ -517,7 +517,7 @@ if (u && u.fecha === hoy) {
 } else if (u) {
   bloqueFeedback($("feedback"), u, true);
 } else {
-  $("feedback").append(el("p", "vacio", "Aún no hay entrenos. Cuando termines de correr con la app Entreno del reloj, el atajo CMM le pide el feedback a Claude y aparece aquí."));
+  $("feedback").append(el("p", "vacio", "Aún no hay entrenos. Cuando termines de correr, el atajo Bidii envía tu entreno y el feedback del coach aparece aquí."));
 }
 
 // --- Historial ---
