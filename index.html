@@ -174,6 +174,9 @@ summary::marker, summary::-webkit-details-marker { color: var(--plumon); }
 .buzon-form button { background: var(--plumon); color: var(--papel); /* blanco en claro, tinta en oscuro: contraste ≥ 4,5 */ border: 0; padding: 0 16px; }
 .boton-texto { background: none; border: 0; color: var(--plumon); padding: 0; text-decoration: underline; text-underline-offset: 3px; }
 .buzon-error { color: var(--mal); font-size: 14px; margin: 8px 0 0; }
+.sesion-form { flex-wrap: wrap; }
+.sesion-form #sesion-texto { flex-basis: 100%; } /* el texto en su propia línea: en el teléfono no cabe junto a la fecha */
+.sesion-form button { padding: 10px 16px; }
 </style>
 </head>
 <body>
@@ -230,9 +233,21 @@ summary::marker, summary::-webkit-details-marker { color: var(--plumon); }
 
   <section class="seccion">
     <details>
-      <summary>Plan completo (16 semanas)</summary>
+      <summary id="t-plan">Plan completo</summary>
       <div id="plan"></div>
     </details>
+  </section>
+
+  <section class="seccion" id="mi-semana" aria-labelledby="t-mi-semana" hidden>
+    <h2 id="t-mi-semana">Mi semana</h2>
+    <p class="vacio">Anota las sesiones que te mandó tu coach. Se guardan en tu buzón.</p>
+    <ol class="renglones" id="mis-sesiones"></ol>
+    <form class="buzon-form sesion-form" id="sesion-form">
+      <input id="sesion-fecha" type="date" required aria-label="Día de la sesión">
+      <input id="sesion-texto" maxlength="120" placeholder="Ej: 40' Z2 + 6 strides" required aria-label="Qué toca">
+      <button type="submit">Agregar</button>
+    </form>
+    <p class="buzon-error" id="sesion-error" hidden></p>
   </section>
 
   <section class="seccion" id="buzon" aria-labelledby="t-buzon">
@@ -313,29 +328,53 @@ if (nuevos.length) {
 }
 const entrenos = Object.values(guardados).sort((a, b) => b.fecha.localeCompare(a.fecha));
 
+// --- Plan: el propio (lo carga cada usuario en "Mi semana") o, si no tiene, el de Pacho (plan.js) ---
+const CLAVE_PLAN = "bidii.plan";
+function cargarPlanPropio() {
+  try { const p = JSON.parse(localStorage.getItem(CLAVE_PLAN)); return Array.isArray(p) ? p : null; } catch { return null; }
+}
+const planPropio = cargarPlanPropio();
+function lunesDe(fechaIso) { return sumarDias(fechaIso, -((new Date(fechaIso + "T12:00:00Z").getUTCDay() + 6) % 7)); }
+// El plan propio no trae "S1 · ": la semana se cuenta desde el lunes de la primera sesión
+function numerarSemanas(sesiones) {
+  const ordenadas = [...sesiones].sort((a, b) => a.fecha.localeCompare(b.fecha));
+  if (!ordenadas.length) return [];
+  const inicio = lunesDe(ordenadas[0].fecha);
+  return ordenadas.map((s) => ({ ...s, titulo: `S${Math.floor(diasEntre(inicio, s.fecha) / 7) + 1} · ${s.titulo}` }));
+}
+const PLAN = planPropio ? numerarSemanas(planPropio) : window.PLAN;
+const sinPlan = PLAN.length === 0;
+const totalSemanas = Math.max(0, ...PLAN.map((s) => Number(semanaDe(s.titulo)) || 0));
+
 // --- Calcular ---
 // ?hoy=AAAA-MM-DD solo sirve para probar la app simulando otra fecha
 const hoy = /^\d{4}-\d{2}-\d{2}$/.test(new URLSearchParams(location.search).get("hoy") || "")
   ? new URLSearchParams(location.search).get("hoy") : hoyLocal();
-const { racha, mejor, estados } = calcularRacha(window.PLAN, entrenos, hoy);
+const { racha, mejor, estados } = calcularRacha(PLAN, entrenos, hoy);
 
 // --- Cabecera y dorsal ---
 $("faltan").textContent = Math.max(0, diasEntre(hoy, DIA_CARRERA));
+// shortcut: la cuenta regresiva es de la Media de Concepción; con plan propio se oculta hasta que cada uno pueda poner su carrera
+if (planPropio) document.querySelector(".cuenta").remove();
 $("racha").textContent = racha;
-const antesDelPlan = hoy < window.PLAN[0].fecha;
-$("mejor").textContent = mejor === 0 && antesDelPlan ? `Tu racha parte el ${bonita(window.PLAN[0].fecha)}` : `Mejor: ${mejor}`;
+const antesDelPlan = !sinPlan && hoy < PLAN[0].fecha;
+$("mejor").textContent = mejor === 0 && antesDelPlan ? `Tu racha parte el ${bonita(PLAN[0].fecha)}` : `Mejor: ${mejor}`;
 
 // --- Hoy ---
 const sesionHoy = estados.find((s) => s.fecha === hoy);
 const ayer = estados.find((s) => s.estado === "pendiente" && s.fecha < hoy);
 const proxima = estados.find((s) => s.fecha > hoy);
 const ref = sesionHoy || ayer || proxima || estados[estados.length - 1];
-const numSemana = semanaDe(ref.titulo);
-const textoSemana = `semana ${numSemana} de 16`;
+const numSemana = ref ? semanaDe(ref.titulo) : null;
+// El plan propio crece semana a semana, así que no tiene un "de N" fijo
+const textoSemana = planPropio ? `semana ${numSemana}` : `semana ${numSemana} de ${totalSemanas}`;
 const titulo = $("hoy-titulo"), meta = $("hoy-meta");
 titulo.textContent = ""; // saca el "…" que se ve mientras carga
 
-if (sesionHoy && sesionHoy.estado === "hecha") {
+if (sinPlan) {
+  titulo.textContent = "Carga tu semana";
+  meta.textContent = "Más abajo, en Mi semana, anota las sesiones que te mandó tu coach.";
+} else if (sesionHoy && sesionHoy.estado === "hecha") {
   titulo.append(el("span", "ok", "Cumpliste: "), sinPrefijo(sesionHoy.titulo));
   meta.textContent = `${bonita(hoy)} · ${textoSemana}. Un cuadro más en la cadena.`;
 } else if (sesionHoy) {
@@ -345,12 +384,15 @@ if (sesionHoy && sesionHoy.estado === "hecha") {
   titulo.textContent = sinPrefijo(ayer.titulo);
   meta.append(el("b", "", "Quedó de ayer"), " · si corres hoy, cuenta para la racha");
 } else if (antesDelPlan) {
-  const dias = diasEntre(hoy, window.PLAN[0].fecha);
-  titulo.textContent = sinPrefijo(window.PLAN[0].titulo);
-  meta.append(el("b", "", `Parte el ${bonita(window.PLAN[0].fecha)}`), ` · en ${dias} día${dias === 1 ? "" : "s"}`);
+  const dias = diasEntre(hoy, PLAN[0].fecha);
+  titulo.textContent = sinPrefijo(PLAN[0].titulo);
+  meta.append(el("b", "", `Parte el ${bonita(PLAN[0].fecha)}`), ` · en ${dias} día${dias === 1 ? "" : "s"}`);
 } else if (proxima) {
   titulo.textContent = "Hoy descansas";
   meta.textContent = `Próxima: ${bonita(proxima.fecha)} · ${sinPrefijo(proxima.titulo)}`;
+} else if (planPropio) {
+  titulo.textContent = "Semana terminada";
+  meta.textContent = "Cuando te llegue el plan nuevo, cárgalo en Mi semana.";
 } else {
   titulo.textContent = "Llegó la carrera";
   meta.textContent = "Todo el plan quedó atrás. A disfrutarla.";
@@ -395,7 +437,7 @@ for (const s of estados.filter((x) => semanaDe(x.titulo) === numSemana)) {
   );
   $("semana").append(li);
 }
-$("t-semana").textContent = `Semana ${numSemana} de 16`;
+$("t-semana").textContent = numSemana ? textoSemana[0].toUpperCase() + textoSemana.slice(1) : "Esta semana";
 
 // --- Mediciones de un entreno (color + valor escrito) ---
 function medidasDe(e) {
@@ -435,7 +477,7 @@ if (entrenos.length) {
     $("historial").append(li);
   }
 } else {
-  $("historial").append(el("li", "vacio", `Tu historial empieza con el rodaje del ${bonita(window.PLAN[0].fecha)}.`));
+  $("historial").append(el("li", "vacio", sinPlan ? "Tu historial empieza con tu primer entreno." : `Tu historial empieza con el rodaje del ${bonita(PLAN[0].fecha)}.`));
 }
 
 // --- Plan completo ---
@@ -446,6 +488,7 @@ for (const [n, ses] of Object.entries(porSemana)) {
   fila.append(el("b", "", `S${n} `), ses.map((s) => `${bonita(s.fecha)}: ${sinPrefijo(s.titulo)}${NOMBRE_ESTADO[s.estado] ? " (" + NOMBRE_ESTADO[s.estado] + ")" : ""}`).join(" · "));
   $("plan").append(fila);
 }
+$("t-plan").textContent = `Plan completo (${totalSemanas} semana${totalSemanas === 1 ? "" : "s"})`;
 
 // --- Pie y avisos ---
 if (fechasNuevas.size) {
@@ -485,13 +528,72 @@ async function sincronizar(clave) {
   $("buzon-estado").textContent = `Conectado · ${remotos.length} entreno${remotos.length === 1 ? "" : "s"} en el buzón.`;
   $("buzon-form").hidden = true;
   $("buzon-error").hidden = true;
-  if (!cambiados.length) return;
+  const planCambio = await sincronizarPlan(clave);
+  if (!cambiados.length && !planCambio) return;
   for (const e of cambiados) guardados[e.fecha] = e;
   try {
     localStorage.setItem(CLAVE, JSON.stringify(guardados));
     sessionStorage.setItem("bidii.nuevas", JSON.stringify(nuevasFechas));
   } catch { return; } // sin almacenamiento no se puede recargar con los datos
   location.reload();
+}
+// Trae el plan del casillero. Devuelve true si cambió lo guardado en el teléfono (hay que recargar)
+async function sincronizarPlan(clave) {
+  let remoto;
+  try {
+    const r = await fetch(`${BUZON}/plan`, { headers: { Authorization: `Bearer ${clave}` }, cache: "no-store" });
+    if (!r.ok) return false;
+    remoto = await r.json();
+  } catch { return false; }
+  if (!Array.isArray(remoto)) { // null = casillero de Pacho: su plan es plan.js
+    if (!planPropio) return false;
+    try { localStorage.removeItem(CLAVE_PLAN); } catch {}
+    return true;
+  }
+  if (JSON.stringify(remoto) === JSON.stringify(planPropio)) return false;
+  try { localStorage.setItem(CLAVE_PLAN, JSON.stringify(remoto)); } catch { return false; }
+  return true;
+}
+// Primero se guarda en el buzón; solo si resulta se guarda en el teléfono, así no quedan distintos
+async function guardarPlan(nuevo) {
+  const error = (texto) => { $("sesion-error").textContent = texto; $("sesion-error").hidden = false; };
+  const clave = leerClave();
+  if (!clave) { error("Conecta tu buzón primero (más abajo)."); return; }
+  const ordenado = [...nuevo].sort((a, b) => a.fecha.localeCompare(b.fecha));
+  let r = null;
+  try {
+    r = await fetch(`${BUZON}/plan`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${clave}`, "Content-Type": "application/json" },
+      body: JSON.stringify(ordenado),
+    });
+  } catch {}
+  if (!r || !r.ok) { error("No pude guardar en el buzón. Revisa la conexión e intenta de nuevo."); return; }
+  try { localStorage.setItem(CLAVE_PLAN, JSON.stringify(ordenado)); } catch {}
+  location.reload();
+}
+// --- Mi semana: cada usuario anota las sesiones que le manda su coach ---
+if (planPropio) {
+  $("mi-semana").hidden = false;
+  const desde = sumarDias(hoy, -7); // la semana pasada sigue a la vista por si hay que corregirla
+  const visibles = planPropio.filter((s) => s.fecha >= desde).sort((a, b) => a.fecha.localeCompare(b.fecha));
+  if (!visibles.length) $("mis-sesiones").append(el("li", "vacio", "Aún no hay sesiones cargadas."));
+  for (const s of visibles) {
+    const li = el("li", s.fecha === hoy ? "hoy-fila" : "");
+    const quitar = el("button", "boton-texto", "quitar");
+    quitar.type = "button";
+    quitar.setAttribute("aria-label", `Quitar ${bonita(s.fecha)}: ${s.titulo}`);
+    quitar.addEventListener("click", () => guardarPlan(planPropio.filter((x) => x !== s)));
+    li.append(el("span", "fecha num", bonita(s.fecha)), el("span", "que", s.titulo), quitar);
+    $("mis-sesiones").append(li);
+  }
+  $("sesion-fecha").value = hoy;
+  $("sesion-form").addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    const fecha = $("sesion-fecha").value, texto = $("sesion-texto").value.trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha) || !texto) return;
+    guardarPlan([...planPropio, { fecha, titulo: texto, hora: null }]);
+  });
 }
 $("buzon-form").addEventListener("submit", (ev) => {
   ev.preventDefault();
